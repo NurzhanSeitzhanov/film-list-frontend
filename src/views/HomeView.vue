@@ -1,9 +1,13 @@
-<script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
-</script>
-
 <template>
   <main>
-    <TheWelcome />
+    <FilmList title="Welcome to your Film List!" />
   </main>
 </template>
+
+<script setup lang="ts">
+import FilmList from '@/components/FilmList.vue'
+</script>
+
+<style scoped>
+
+</style>
