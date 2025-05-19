@@ -77,6 +77,34 @@ function addFilm() {
 function removeFilm(id: number) {
   films.value = films.value.filter(f => f.id !== id)
 }
+
+// Load films from the backend using GET method
+function loadFilms() {
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+  const endpoint = `${baseUrl}/movies`
+
+  const requestOptions: RequestInit = {
+    method: 'GET', // Explicitly using GET method
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow'
+  }
+
+  fetch(endpoint, requestOptions)
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to load films")
+      return response.json()
+    })
+    .then(result => {
+      films.value = result
+    })
+    .catch(error => console.error("Error loading films:", error))
+}
+
+// Load films immediately when the component is mounted
+loadFilms()
+
 </script>
 
 <style scoped>
