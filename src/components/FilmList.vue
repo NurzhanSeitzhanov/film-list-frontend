@@ -9,7 +9,7 @@
     <input class="grid-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
     <label class="grid-checkbox"><input type="checkbox" v-model="watchedField" /> Watched</label>
     <label class="grid-checkbox"><input type="checkbox" v-model="favoriteField" /> Favorite</label>
-    <button class="grid-button" @click="addFilm">Add Film</button>
+    <button class="grid-button" @click="saveFilm">Add Film</button>
   </div>
 
   <!-- Column labels -->
@@ -40,15 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import type { Ref } from 'vue'
 
-defineProps<{
-  title: string
-}>()
+defineProps<{ title: string }>()
 
-// Updated Film type matching backend structure
 type Film = {
-  id: number
+  id?: number
   title: string
   year: number
   genre: string
@@ -57,10 +55,8 @@ type Film = {
   favorite: boolean
 }
 
-// Reactive data
-const films = ref<Film[]>([])
+const films: Ref<Film[]> = ref([])
 
-// Input fields
 const titleField = ref('')
 const yearField = ref<number | null>(null)
 const genreField = ref('')
@@ -68,68 +64,72 @@ const ratingField = ref<number | null>(null)
 const watchedField = ref(false)
 const favoriteField = ref(false)
 
-let currentId = 1 // Used only for local-only additions
-
-// Add film locally (not saved to backend)
-function addFilm() {
-  if (
-    titleField.value &&
-    yearField.value !== null &&
-    genreField.value &&
-    ratingField.value !== null
-  ) {
-    films.value.push({
-      id: currentId++,
-      title: titleField.value,
-      year: yearField.value,
-      genre: genreField.value,
-      rating: ratingField.value,
-      watched: watchedField.value,
-      favorite: favoriteField.value
-    })
-
-    // Reset fields
-    titleField.value = ''
-    yearField.value = null
-    genreField.value = ''
-    ratingField.value = null
-    watchedField.value = false
-    favoriteField.value = false
-  }
-}
-
-// Remove film locally
-function removeFilm(id: number) {
-  films.value = films.value.filter(f => f.id !== id)
-}
-
-// Load films from backend
 function loadFilms() {
   const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
-  const endpoint = `${baseUrl}/movies`
+  const endpoint = baseUrl + '/movies'
 
-  const requestOptions: RequestInit = {
-    method: 'GET',
+  fetch(endpoint, { method: 'GET' })
+    .then(response => response.json())
+    .then((result: Film[]) => {
+      films.value = result
+    })
+    .catch(error => console.error('Error loading films:', error))
+}
+
+function saveFilm() {
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+  const endpoint = baseUrl + '/movies'
+
+  const newFilm: Film = {
+    title: titleField.value,
+    year: yearField.value ?? 0,
+    genre: genreField.value,
+    rating: ratingField.value ?? 0,
+    watched: watchedField.value,
+    favorite: favoriteField.value
+  }
+
+  fetch(endpoint, {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    redirect: 'follow'
-  }
-
-  fetch(endpoint, requestOptions)
-    .then(response => {
-      if (!response.ok) throw new Error("Failed to load films")
-      return response.json()
+    body: JSON.stringify(newFilm)
+  })
+    .then(response => response.json())
+    .then((savedFilm: Film) => {
+      films.value.push(savedFilm)
+      // Reset form
+      titleField.value = ''
+      yearField.value = null
+      genreField.value = ''
+      ratingField.value = null
+      watchedField.value = false
+      favoriteField.value = false
     })
-    .then(result => {
-      films.value = result
-    })
-    .catch(error => console.error("Error loading films:", error))
+    .catch(error => console.error('Error saving film:', error))
 }
 
-// Load on mount
-loadFilms()
+function removeFilm(id: number) {
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+  const endpoint = `${baseUrl}/movies/${id}`
+
+  fetch(endpoint, {
+    method: 'DELETE'
+  })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to delete film')
+      films.value = films.value.filter(f => f.id !== id)
+    })
+    .catch(error => console.error('Error deleting film:', error))
+}
+
+// Auto-load films on component mount
+onMounted(() => {
+  loadFilms()
+})
 </script>
+
 
 
 <style scoped>
