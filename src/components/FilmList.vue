@@ -110,7 +110,8 @@ function saveFilm() {
     .catch(error => console.error('Error saving film:', error))
 }
 
-function removeFilm(id: number) {
+function removeFilm(id?: number) {
+  if (id == null) return
   const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
   const endpoint = `${baseUrl}/movies/${id}`
 
