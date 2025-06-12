@@ -1,32 +1,26 @@
-import { shallowMount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { shallowMount, flushPromises } from '@vue/test-utils'
 import FilmList from '@/components/FilmList.vue'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import axios from 'axios'
 
 vi.mock('axios')
-const mockedAxios = axios as jest.Mocked<typeof axios>
+const mockedAxios = vi.mocked(axios, true)
 
-describe('FilmList.vue with Axios', () => {
+describe('FilmList.vue', () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
-  it('should render the title and load films', async () => {
-    mockedAxios.get.mockResolvedValue({
+  it('should render title and load films', async () => {
+    mockedAxios.get.mockResolvedValueOnce({
       data: [
         { id: 1, title: 'Lion King', year: 1994, genre: 'Family', rating: 9.0, watched: true, favorite: true },
         { id: 2, title: 'Matrix', year: 1999, genre: 'Action', rating: 7.5, watched: true, favorite: false }
       ]
     })
 
-    const wrapper = shallowMount(FilmList, {
-      props: { title: 'My Films' }
-    })
-
-    // Wait for onMounted() + axios.get() to resolve
-    await new Promise(resolve => setTimeout(resolve, 0))
-    await wrapper.vm.$nextTick()
-    await wrapper.vm.$nextTick()
+    const wrapper = shallowMount(FilmList, { props: { title: 'My Films' } })
+    await flushPromises()
 
     expect(wrapper.text()).toContain('My Films')
     expect(wrapper.text()).toContain('Lion King')

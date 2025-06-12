@@ -160,6 +160,22 @@ async function removeFilm(id?: number) {
 onMounted(() => {
   loadFilms()
 })
+
+defineExpose({
+  titleField,
+  yearField,
+  genreField,
+  ratingField,
+  watchedField,
+  favoriteField,
+  editingFilmId,
+  currentEditingTitle,
+  films,
+  startEdit,
+  saveFilm,
+  removeFilm
+})
+
 </script>
 
 
