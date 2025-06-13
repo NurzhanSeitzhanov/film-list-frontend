@@ -3,7 +3,7 @@
 
   <!-- Input row -->
   <div class="grid-header">
-    <input class="grid-input" v-model="titleField" placeholder="Title" type="text" />
+    <input class="grid-input" v-model="titleField" placeholder="Title" type="text" @input="titleError = ''" />
     <input class="grid-input" v-model.number="yearField" placeholder="Year" type="number" />
     <input class="grid-input" v-model="genreField" placeholder="Genre" type="text" />
     <input class="grid-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
@@ -12,8 +12,13 @@
     <button class="grid-button" @click="saveFilm">{{ editingFilmId !== null ? 'Update Film' : 'Add Film' }}</button>
   </div>
 
-  <div v-if="editingFilmId !== null" class="edit-indicator">
-    Editing film: {{ currentEditingTitle }}
+  <div class="edit-indicator">
+    <template v-if="titleError">
+      <span class="error-message">{{ titleError }}</span>
+    </template>
+    <template v-else-if="editingFilmId !== null">
+      Editing film: {{ currentEditingTitle }}
+    </template>
   </div>
 
   <!-- Column labels -->
@@ -76,6 +81,7 @@ const favoriteField = ref(false)
 
 const editingFilmId = ref<number | null>(null)
 const currentEditingTitle = ref('')
+const titleError = ref('')
 
 async function loadFilms() {
   const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
@@ -90,6 +96,13 @@ async function loadFilms() {
 }
 
 async function saveFilm() {
+  titleError.value = ''
+
+  if (!titleField.value.trim()) {
+    titleError.value = 'Please enter the film title'
+    return
+  }
+
   const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
   const isEditing = editingFilmId.value !== null
   const endpoint = isEditing
@@ -97,7 +110,7 @@ async function saveFilm() {
     : `${baseUrl}/movies`
 
   const newFilm: Film = {
-    title: titleField.value,
+    title: titleField.value.trim(),
     year: yearField.value ?? 0,
     genre: genreField.value,
     rating: ratingField.value ?? 0,
@@ -116,12 +129,11 @@ async function saveFilm() {
       const index = films.value.findIndex(f => f.id === editingFilmId.value)
       if (index !== -1) films.value[index] = savedFilm
       editingFilmId.value = null
-      currentEditingTitle.value = ''
     } else {
       films.value.push(savedFilm)
     }
 
-    // Reset form
+    currentEditingTitle.value = ''
     titleField.value = ''
     yearField.value = null
     genreField.value = ''
@@ -134,6 +146,8 @@ async function saveFilm() {
 }
 
 function startEdit(film: Film) {
+  titleError.value = '' // Clear error on edit
+
   titleField.value = film.title
   yearField.value = film.year
   genreField.value = film.genre
@@ -175,9 +189,7 @@ defineExpose({
   saveFilm,
   removeFilm
 })
-
 </script>
-
 
 <style scoped>
 h2 {
@@ -194,7 +206,6 @@ h2 {
   margin-bottom: 1rem;
 }
 
-/* Define as grid + wider last column for buttons */
 .grid-labels,
 .grid-data {
   display: grid;
@@ -204,7 +215,6 @@ h2 {
   text-align: center;
 }
 
-/* Column headers */
 .grid-labels {
   font-weight: 600;
   background-color: #f0f0f0;
@@ -212,7 +222,6 @@ h2 {
   border-radius: 10px;
 }
 
-/* Film row styling */
 .grid-data {
   gap: 10px;
   align-items: center;
@@ -220,7 +229,6 @@ h2 {
   border-bottom: 1px solid #eee;
 }
 
-/* Input row at top */
 .grid-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -260,7 +268,6 @@ h2 {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* "Add/Update Film" button */
 .grid-button {
   padding: 10px 14px;
   background-color: #007bff;
@@ -275,7 +282,6 @@ h2 {
   background-color: #0056b3;
 }
 
-/* Action buttons layout */
 .button-group {
   display: flex;
   gap: 8px;
@@ -287,7 +293,6 @@ h2 {
   min-width: 64px;
 }
 
-/* Edit button */
 .edit-btn {
   padding: 8px 12px;
   background-color: #007bff;
@@ -302,7 +307,6 @@ h2 {
   background-color: #0056b3;
 }
 
-/* Delete button */
 .delete-btn {
   padding: 8px 12px;
   background-color: #dc3545;
@@ -317,12 +321,17 @@ h2 {
   background-color: #b52b3d;
 }
 
-/* "No films yet" fallback */
 .no-films {
   text-align: center;
   color: #666;
   font-style: italic;
   margin-top: 2rem;
   font-size: 1.1rem;
+}
+
+.error-message {
+  color: red;
+  text-align: center;
+  font-weight: bold;
 }
 </style>
