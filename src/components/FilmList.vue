@@ -9,7 +9,19 @@
     <input class="grid-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
     <label class="grid-checkbox"><input type="checkbox" v-model="watchedField" /> Watched</label>
     <label class="grid-checkbox"><input type="checkbox" v-model="favoriteField" /> Favorite</label>
-    <button class="grid-button" @click="saveFilm">{{ editingFilmId !== null ? 'Update Film' : 'Add Film' }}</button>
+
+    <div class="button-pair">
+      <button class="button-primary" @click="saveFilm">
+        {{ editingFilmId !== null ? 'Update Film' : 'Add Film' }}
+      </button>
+      <button
+        v-if="editingFilmId === null"
+        class="button-danger"
+        @click="removeAllFilms"
+      >
+        Delete All
+      </button>
+    </div>
   </div>
 
   <div class="edit-indicator">
@@ -43,8 +55,8 @@
       <div class="grid-cell">{{ film.favorite ? 'Yes' : 'No' }}</div>
       <div class="grid-cell">
         <div class="button-group">
-          <button class="edit-btn" @click="startEdit(film)">Edit</button>
-          <button class="delete-btn" @click="removeFilm(film.id)">Delete</button>
+          <button class="button-primary" @click="startEdit(film)">Edit</button>
+          <button class="button-danger" @click="removeFilm(film.id)">Delete</button>
         </div>
       </div>
     </template>
@@ -82,6 +94,19 @@ const favoriteField = ref(false)
 const editingFilmId = ref<number | null>(null)
 const currentEditingTitle = ref('')
 const titleError = ref('')
+
+function resetForm() {
+  editingFilmId.value = null
+  currentEditingTitle.value = ''
+  titleField.value = ''
+  yearField.value = null
+  genreField.value = ''
+  ratingField.value = null
+  watchedField.value = false
+  favoriteField.value = false
+  titleError.value = ''
+}
+
 
 async function loadFilms() {
   const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
@@ -133,13 +158,7 @@ async function saveFilm() {
       films.value.push(savedFilm)
     }
 
-    currentEditingTitle.value = ''
-    titleField.value = ''
-    yearField.value = null
-    genreField.value = ''
-    ratingField.value = null
-    watchedField.value = false
-    favoriteField.value = false
+    resetForm()
   } catch (error) {
     console.error('Error saving film:', error)
   }
@@ -166,8 +185,26 @@ async function removeFilm(id?: number) {
   try {
     await axios.delete(endpoint)
     films.value = films.value.filter(f => f.id !== id)
+
+    // Clear form if the deleted film was being edited
+    if (editingFilmId.value === id) {
+      resetForm()
+    }
   } catch (error) {
     console.error('Error deleting film:', error)
+  }
+}
+
+async function removeAllFilms() {
+  const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+  const endpoint = `${baseUrl}/movies`
+
+  try {
+    await axios.delete(endpoint)
+    films.value = []
+    resetForm()
+  } catch (error) {
+    console.error('Error deleting all films:', error)
   }
 }
 
@@ -268,20 +305,35 @@ h2 {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.grid-button {
-  padding: 10px 14px;
-  background-color: #007bff;
-  color: white;
+/* Unified Button Styles */
+.button-primary,
+.button-danger {
+  padding: 8px 18px;
+  font-size: 0.95rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.95rem;
   transition: background-color 0.2s ease;
+  color: white;
+  min-width: 100px;
+  white-space: nowrap;
 }
-.grid-button:hover {
+
+.button-primary {
+  background-color: #007bff;
+}
+.button-primary:hover {
   background-color: #0056b3;
 }
 
+.button-danger {
+  background-color: #dc3545;
+}
+.button-danger:hover {
+  background-color: #b52b3d;
+}
+
+/* Button Layouts */
 .button-group {
   display: flex;
   gap: 8px;
@@ -289,36 +341,11 @@ h2 {
   align-items: center;
 }
 
-.button-group button {
-  min-width: 64px;
-}
-
-.edit-btn {
-  padding: 8px 12px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s ease;
-}
-.edit-btn:hover {
-  background-color: #0056b3;
-}
-
-.delete-btn {
-  padding: 8px 12px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s ease;
-}
-.delete-btn:hover {
-  background-color: #b52b3d;
+.button-pair {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
 }
 
 .no-films {
