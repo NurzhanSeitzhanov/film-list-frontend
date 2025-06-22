@@ -1,16 +1,16 @@
 const genreOptions = [
   'Action',
+  'Adventure',
+  'Animation',
   'Comedy',
+  'Crime',
   'Drama',
-  'Thriller',
+  'Family',
+  'Fantasy',
   'Horror',
   'Romance',
   'Sci-Fi',
-  'Fantasy',
-  'Family',
-  'Animation',
-  'Crime',
-  'Adventure'
+  'Thriller'
 ]
 
 export default genreOptions

@@ -5,7 +5,7 @@
   <div class="grid-header">
     <input class="grid-input" v-model="titleField" placeholder="Title" type="text" @input="titleError = ''" />
     <input class="grid-input" v-model.number="yearField" placeholder="Year" type="number" />
-    <input class="grid-input" v-model="genreField" placeholder="Genre" type="text" />
+    <GenreDropdown v-model="genreField" :options="genreOptions" />
     <input class="grid-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
     <label class="grid-checkbox"><input type="checkbox" v-model="watchedField" /> Watched</label>
     <label class="grid-checkbox"><input type="checkbox" v-model="favoriteField" /> Favorite</label>
@@ -73,6 +73,8 @@ import { ref, computed, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import axios from 'axios'
 import FilmFilter from './FilmFilter.vue'
+import GenreDropdown from './GenreDropdown.vue'
+import genreOptions from '@/data/genres'
 
 const selectedFilter = ref('all')
 
@@ -101,7 +103,7 @@ const films: Ref<Film[]> = ref([])
 
 const titleField = ref('')
 const yearField = ref<number | null>(null)
-const genreField = ref('')
+const genreField = ref<string[]>([])
 const ratingField = ref<number | null>(null)
 const watchedField = ref(false)
 const favoriteField = ref(false)
@@ -109,19 +111,19 @@ const favoriteField = ref(false)
 const editingFilmId = ref<number | null>(null)
 const currentEditingTitle = ref('')
 const titleError = ref('')
+const loading = ref(false)
 
 function resetForm() {
   editingFilmId.value = null
   currentEditingTitle.value = ''
   titleField.value = ''
   yearField.value = null
-  genreField.value = ''
+  genreField.value = []
   ratingField.value = null
   watchedField.value = false
   favoriteField.value = false
   titleError.value = ''
 }
-
 
 async function loadFilms() {
   const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
@@ -152,13 +154,15 @@ async function saveFilm() {
   const newFilm: Film = {
     title: titleField.value.trim(),
     year: yearField.value ?? 0,
-    genre: genreField.value,
+    genre: genreField.value.join(', '),
     rating: ratingField.value ?? 0,
     watched: watchedField.value,
     favorite: favoriteField.value
   }
 
   try {
+    loading.value = true
+
     const response = isEditing
       ? await axios.put<Film>(endpoint, newFilm)
       : await axios.post<Film>(endpoint, newFilm)
@@ -176,15 +180,24 @@ async function saveFilm() {
     resetForm()
   } catch (error) {
     console.error('Error saving film:', error)
+    alert('Error saving film. Please try again.')
+  } finally {
+    loading.value = false
   }
 }
 
 function startEdit(film: Film) {
-  titleError.value = '' // Clear error on edit
-
+  titleError.value = ''
   titleField.value = film.title
   yearField.value = film.year
-  genreField.value = film.genre
+  if (typeof film.genre === 'string') {
+    genreField.value = film.genre
+      .split(',')
+      .map(g => g.trim())
+      .filter(g => g.length > 0)
+  } else {
+    genreField.value = []
+  }
   ratingField.value = film.rating
   watchedField.value = film.watched
   favoriteField.value = film.favorite
@@ -201,7 +214,6 @@ async function removeFilm(id?: number) {
     await axios.delete(endpoint)
     films.value = films.value.filter(f => f.id !== id)
 
-    // Clear form if the deleted film was being edited
     if (editingFilmId.value === id) {
       resetForm()
     }

@@ -47,7 +47,7 @@ describe('FilmList.vue', () => {
 
     wrapper.vm.titleField = 'Django Unchained'
     wrapper.vm.yearField = 2012
-    wrapper.vm.genreField = 'Western'
+    wrapper.vm.genreField = ['Western']
     wrapper.vm.ratingField = 8.0
     wrapper.vm.watchedField = true
     wrapper.vm.favoriteField = true
@@ -82,7 +82,7 @@ describe('FilmList.vue', () => {
       props: { title: 'Edit Test' }
     })
 
-    await wrapper.vm.$nextTick()
+    await flushPromises()
 
     const film = wrapper.vm.films[0]
     wrapper.vm.startEdit(film)
@@ -108,7 +108,7 @@ describe('FilmList.vue', () => {
       props: { title: 'Delete Test' }
     })
 
-    await wrapper.vm.$nextTick()
+    await flushPromises()
 
     await wrapper.vm.removeFilm(1)
     await wrapper.vm.$nextTick()

@@ -1,6 +1,6 @@
 <template>
   <div class="stats-view">
-    <h2> Film Statistics</h2>
+    <h1> Film list statistics</h1>
     <FilmStats />
   </div>
 </template>
