@@ -33,8 +33,11 @@
     </template>
   </div>
 
+  <!-- Filter buttons -->
+  <FilmFilter :selected="selectedFilter" @change-filter="val => selectedFilter = val" />
+
   <!-- Column labels -->
-  <div v-if="films.length" class="grid-labels">
+  <div v-if="filteredFilms.length" class="grid-labels">
     <div>Title</div>
     <div>Year</div>
     <div>Genre</div>
@@ -45,8 +48,8 @@
   </div>
 
   <!-- Film rows -->
-  <div v-if="films.length" class="grid-data">
-    <template v-for="film in films" :key="film.id">
+  <div v-if="filteredFilms.length" class="grid-data">
+    <template v-for="film in filteredFilms" :key="film.id">
       <div class="grid-cell">{{ film.title }}</div>
       <div class="grid-cell">{{ film.year }}</div>
       <div class="grid-cell">{{ film.genre }}</div>
@@ -66,9 +69,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import axios from 'axios'
+import FilmFilter from './FilmFilter.vue'
+
+const selectedFilter = ref('all')
+
+const filteredFilms = computed(() => {
+  if (selectedFilter.value === 'watched') {
+    return films.value.filter(f => f.watched)
+  } else if (selectedFilter.value === 'favorite') {
+    return films.value.filter(f => f.favorite)
+  }
+  return films.value
+})
 
 defineProps<{ title: string }>()
 
