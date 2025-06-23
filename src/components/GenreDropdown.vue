@@ -1,56 +1,58 @@
 <template>
   <div class="dropdown-container" ref="dropdownRef">
     <button class="dropdown-toggle" @click="toggleDropdown">
-      Select genres <span class="arrow">&#9662;</span>
+      {{ selectedDisplay }} <span class="arrow">&#9662;</span>
     </button>
 
     <div v-if="isOpen" class="dropdown-menu">
-      <div v-for="option in options" :key="option" class="dropdown-option">
-        <label>
-          <input
-            type="checkbox"
-            :value="option"
-            v-model="localSelected"
-            :disabled="isDisabled(option)"
-          />
-          {{ option }}
-        </label>
-      </div>
+      <label v-for="option in options" :key="option" class="dropdown-option">
+        <input
+          type="checkbox"
+          :value="option"
+          :checked="modelValue.includes(option)"
+          @change="toggleOption(option)"
+          :disabled="isMaxSelected && !modelValue.includes(option)"
+        />
+        {{ option }}
+      </label>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
-  modelValue: string[] // prop from parent
+  modelValue: string[]
   options: string[]
 }>()
-
 const emit = defineEmits(['update:modelValue'])
 
 const isOpen = ref(false)
-const localSelected = ref<string[]>([])
+const dropdownRef = ref<HTMLElement | null>(null)
 
-watch(() => props.modelValue, (val) => {
-  // Clone the array to avoid direct mutation
-  localSelected.value = Array.isArray(val) ? [...val] : []
-}, { immediate: true })
+const isMaxSelected = computed(() => props.modelValue.length >= 2)
 
-watch(localSelected, (val) => {
-  emit('update:modelValue', [...val])
-})
+const selectedDisplay = computed(() =>
+  props.modelValue.length > 0 ? props.modelValue.join(', ') : 'Select genres'
+)
 
 function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
 
-function isDisabled(option: string) {
-  return !localSelected.value.includes(option) && localSelected.value.length >= 2
-}
+function toggleOption(option: string) {
+  const selected = [...props.modelValue]
+  const index = selected.indexOf(option)
 
-const dropdownRef = ref<HTMLElement | null>(null)
+  if (index === -1) {
+    if (selected.length < 2) selected.push(option)
+  } else {
+    selected.splice(index, 1)
+  }
+
+  emit('update:modelValue', selected)
+}
 
 function handleClickOutside(event: MouseEvent) {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
@@ -61,11 +63,9 @@ function handleClickOutside(event: MouseEvent) {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
-
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
-
 </script>
 
 <style scoped>
@@ -73,7 +73,6 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
 }
-
 .dropdown-toggle {
   width: 100%;
   padding: 10px;
@@ -89,11 +88,10 @@ onBeforeUnmount(() => {
   color: #555;
   box-sizing: border-box;
 }
-
 .arrow {
   font-size: 0.75rem;
+  margin-left: 8px;
 }
-
 .dropdown-menu {
   position: absolute;
   top: 110%;
@@ -108,13 +106,13 @@ onBeforeUnmount(() => {
   max-height: 180px;
   overflow-y: auto;
 }
-
 .dropdown-option {
+  display: flex;
+  align-items: center;
   padding: 5px;
   font-size: 0.95rem;
   cursor: pointer;
 }
-
 .dropdown-option:hover {
   background-color: #f5f5f5;
   border-radius: 4px;

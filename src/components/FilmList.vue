@@ -5,12 +5,7 @@
   <div class="grid-header">
     <input class="grid-input" v-model="titleField" placeholder="Title" type="text" @input="titleError = ''" />
     <input class="grid-input" v-model.number="yearField" placeholder="Year" type="number" />
-    <input
-      class="grid-input"
-      v-model="genreField[0]"
-      placeholder="Genre (single)"
-      type="text"
-    />
+    <GenreDropdown v-model="genreField" :options="genreOptions" />
     <input class="grid-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
     <label class="grid-checkbox"><input type="checkbox" v-model="watchedField" /> Watched</label>
     <label class="grid-checkbox"><input type="checkbox" v-model="favoriteField" /> Favorite</label>
@@ -78,8 +73,8 @@ import { ref, computed, onMounted } from 'vue'
 import type { Ref } from 'vue'
 import axios from 'axios'
 import FilmFilter from './FilmFilter.vue'
-//import GenreDropdown from './GenreDropdown.vue'
-//import genreOptions from '@/data/genres'
+import GenreDropdown from './GenreDropdown.vue'
+import genreOptions from '@/data/genres'
 
 const selectedFilter = ref('all')
 
@@ -123,7 +118,7 @@ function resetForm() {
   currentEditingTitle.value = ''
   titleField.value = ''
   yearField.value = null
-  genreField.value = ['']
+  genreField.value = []
   ratingField.value = null
   watchedField.value = false
   favoriteField.value = false
