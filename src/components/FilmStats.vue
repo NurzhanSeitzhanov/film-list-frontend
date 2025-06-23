@@ -97,18 +97,12 @@ const stats = computed(() => [
 </script>
 
 <style scoped>
+
 .page-container {
   max-width: 1000px;
   margin: 2rem auto;
   padding: 1rem;
   text-align: center;
-}
-
-h1 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  font-weight: bold;
-  color: #1f1f1f;
 }
 
 .card-grid {
@@ -135,7 +129,8 @@ h1 {
 .card.genre-card {
   grid-column: span 4;
   max-width: 100%;
-  padding: 1rem 1.2rem;
+  padding: 1.5rem 1.2rem 1rem;
+  margin-top: 1rem; /* adds spacing like other cards */
 }
 
 .icon {
@@ -151,6 +146,13 @@ h1 {
   text-align: center;
 }
 
+.card.genre-card .label {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.8rem;
+  color: #222;
+}
+
 .value {
   font-size: 1.3rem;
   font-weight: bold;
@@ -160,7 +162,7 @@ h1 {
 .genre-list {
   list-style: none;
   padding: 0;
-  margin-top: 0.8rem;
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -171,7 +173,9 @@ h1 {
   font-size: 0.95rem;
   background-color: #f0f0f0;
   padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+  border-radius: 999px;
+  font-weight: 500;
 }
+
 </style>
 

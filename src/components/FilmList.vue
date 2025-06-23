@@ -1,19 +1,16 @@
 <template>
   <h2 @click="resetAll" class="clickable-title">{{ title }}</h2>
 
-  <!-- Input row -->
-  <div class="grid-header">
-    <input class="grid-input" v-model="titleField" placeholder="Title" type="text" @input="titleError = ''" />
-    <input class="grid-input" v-model.number="yearField" placeholder="Year" type="number" />
+  <!-- Input row aligned to grid with cleaner spacing -->
+  <div class="grid-input-row">
+    <input class="grid-input short-input" v-model="titleField" placeholder="Title" type="text" @input="titleError = ''" />
+    <input class="grid-input short-input" v-model.number="yearField" placeholder="Year" type="number" />
     <GenreDropdown v-model="genreField" :options="genreOptions" />
-    <input class="grid-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
+    <input class="grid-input short-input" v-model.number="ratingField" placeholder="Rating (0-10)" type="number" step="0.1" min="0" max="10" />
     <label class="grid-checkbox"><input type="checkbox" v-model="watchedField" /> Watched</label>
     <label class="grid-checkbox"><input type="checkbox" v-model="favoriteField" /> Favorite</label>
-
     <div class="button-pair">
-      <button class="button-primary" @click="saveFilm">
-        {{ editingFilmId !== null ? 'Update Film' : 'Add Film' }}
-      </button>
+      <button class="button-primary" @click="saveFilm">{{ editingFilmId !== null ? 'Update Film' : 'Add Film' }}</button>
       <button v-if="editingFilmId === null" class="button-danger" @click="removeAllFilms">Delete All</button>
     </div>
   </div>
@@ -30,7 +27,7 @@
   <!-- Filter buttons -->
   <FilmFilter :selected="selectedFilter" @change-filter="val => selectedFilter = val" />
 
-  <!-- Column headers with dropdown filters -->
+  <!-- Column headers -->
   <div v-if="filteredFilms.length" class="grid-labels">
     <DataFilterSortMenu
       label="Title"
@@ -303,6 +300,49 @@ h2 {
   color: #888;
   font-style: italic;
   margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.grid-input-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr) minmax(140px, 1.5fr);
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  margin: 0 auto 1.5rem;
+  max-width: 1200px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  align-items: center;
+}
+
+.grid-input,
+:deep(.genre-dropdown) {
+  padding: 8px 10px;
+  height: 38px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.short-input {
+  font-size: 0.95rem;
+  height: 38px;
+  padding: 8px 10px;
+}
+
+.grid-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  height: 38px;
+  white-space: nowrap;
 }
 
 .grid-labels,
@@ -312,72 +352,48 @@ h2 {
   max-width: 1200px;
   margin: 0 auto;
   text-align: center;
+  align-items: stretch;
 }
 
 .grid-labels {
   font-weight: 600;
   background-color: #f0f0f0;
-  padding: 10px;
+  padding: 12px 0;
   border-radius: 10px;
+  font-size: 0.95rem;
 }
 
 .grid-data {
   gap: 10px;
-  align-items: center;
-  padding: 10px 0;
+  padding: 6px 0;
   border-bottom: 1px solid #eee;
 }
 
-.grid-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  padding: 1rem;
-  background: #f9f9f9;
-  border-radius: 12px;
-  margin: 0 auto 1.5rem;
-  max-width: 1200px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-}
-
-.grid-input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  text-align: center;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.grid-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  justify-content: center;
-  font-size: 0.95rem;
-}
-
 .grid-cell {
-  padding: 12px;
+  padding: 8px;
   background-color: #fff;
   border-radius: 8px;
   text-align: center;
   font-size: 0.95rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  min-height: 50px;
 }
 
 /* Unified Button Styles */
 .button-primary,
 .button-danger {
-  padding: 8px 18px;
-  font-size: 0.95rem;
+  padding: 6px 14px;
+  font-size: 0.9rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
   color: white;
-  min-width: 100px;
+  min-width: 80px;
   white-space: nowrap;
 }
 
@@ -401,6 +417,7 @@ h2 {
   gap: 8px;
   justify-content: center;
   align-items: center;
+  margin: 0;
 }
 
 .button-pair {
@@ -436,5 +453,4 @@ h2 {
 .clickable-title:hover {
   color: #007bff;
 }
-
 </style>
