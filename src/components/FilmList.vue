@@ -1,5 +1,5 @@
 <template>
-  <h2>{{ title }}</h2>
+  <h2 @click="resetAll" class="clickable-title">{{ title }}</h2>
 
   <!-- Input row -->
   <div class="grid-header">
@@ -14,13 +14,7 @@
       <button class="button-primary" @click="saveFilm">
         {{ editingFilmId !== null ? 'Update Film' : 'Add Film' }}
       </button>
-      <button
-        v-if="editingFilmId === null"
-        class="button-danger"
-        @click="removeAllFilms"
-      >
-        Delete All
-      </button>
+      <button v-if="editingFilmId === null" class="button-danger" @click="removeAllFilms">Delete All</button>
     </div>
   </div>
 
@@ -36,12 +30,32 @@
   <!-- Filter buttons -->
   <FilmFilter :selected="selectedFilter" @change-filter="val => selectedFilter = val" />
 
-  <!-- Column labels -->
+  <!-- Column headers with dropdown filters -->
   <div v-if="filteredFilms.length" class="grid-labels">
-    <div>Title</div>
-    <div>Year</div>
-    <div>Genre</div>
-    <div>Rating</div>
+    <DataFilterSortMenu
+      label="Title"
+      :values="Array.from(new Set(films.map(f => f.title)))"
+      :selected="titleFilter"
+      @update:selected="val => titleFilter = val"
+    />
+    <DataFilterSortMenu
+      label="Year"
+      :values="Array.from(new Set(films.map(f => f.year)))"
+      :selected="yearFilter"
+      @update:selected="val => yearFilter = val"
+    />
+    <DataFilterSortMenu
+      label="Genre"
+      :values="Array.from(new Set(films.flatMap(f => f.genre?.split(',').map(g => g.trim()) || [])))"
+      :selected="genreFilter"
+      @update:selected="val => genreFilter = val"
+    />
+    <DataFilterSortMenu
+      label="Rating"
+      :values="Array.from(new Set(films.map(f => f.rating)))"
+      :selected="ratingFilter"
+      @update:selected="val => ratingFilter = val"
+    />
     <div>Watched</div>
     <div>Favorite</div>
     <div>Action</div>
@@ -75,17 +89,7 @@ import axios from 'axios'
 import FilmFilter from './FilmFilter.vue'
 import GenreDropdown from './GenreDropdown.vue'
 import genreOptions from '@/data/genres'
-
-const selectedFilter = ref('all')
-
-const filteredFilms = computed(() => {
-  if (selectedFilter.value === 'watched') {
-    return films.value.filter(f => f.watched)
-  } else if (selectedFilter.value === 'favorite') {
-    return films.value.filter(f => f.favorite)
-  }
-  return films.value
-})
+import DataFilterSortMenu from './DataFilterSortMenu.vue'
 
 defineProps<{ title: string }>()
 
@@ -98,6 +102,8 @@ type Film = {
   watched: boolean
   favorite: boolean
 }
+
+const selectedFilter = ref('all')
 
 const films: Ref<Film[]> = ref([])
 
@@ -112,6 +118,29 @@ const editingFilmId = ref<number | null>(null)
 const currentEditingTitle = ref('')
 const titleError = ref('')
 const loading = ref(false)
+
+// Filter dropdown states
+const titleFilter = ref<string[]>([])
+const yearFilter = ref<number[]>([])
+const genreFilter = ref<string[]>([])
+const ratingFilter = ref<number[]>([])
+
+const filteredFilms = computed(() => {
+  const base = selectedFilter.value === 'watched'
+    ? films.value.filter(f => f.watched)
+    : selectedFilter.value === 'favorite'
+      ? films.value.filter(f => f.favorite)
+      : films.value
+
+  return base.filter(f =>
+    (titleFilter.value.length === 0 || titleFilter.value.includes(f.title)) &&
+    (yearFilter.value.length === 0 || yearFilter.value.includes(f.year)) &&
+    (genreFilter.value.length === 0 ||
+      (f.genre === '' && genreFilter.value.includes('')) ||
+      (f.genre && f.genre.split(',').some(g => genreFilter.value.includes(g.trim())))) &&
+    (ratingFilter.value.length === 0 || ratingFilter.value.includes(f.rating))
+  )
+})
 
 function resetForm() {
   editingFilmId.value = null
@@ -230,6 +259,16 @@ async function removeAllFilms() {
     console.error('Error deleting all films:', error)
   }
 }
+
+function resetAll() {
+  titleFilter.value = []
+  yearFilter.value = []
+  genreFilter.value = []
+  ratingFilter.value = []
+  selectedFilter.value = 'all'
+  resetForm()
+}
+
 
 onMounted(() => {
   loadFilms()
@@ -384,4 +423,18 @@ h2 {
   text-align: center;
   font-weight: bold;
 }
+
+.clickable-title {
+  cursor: pointer;
+  text-align: center;
+  margin: 2rem 0 1rem;
+  font-size: 2rem;
+  color: #222;
+  transition: color 0.2s ease;
+}
+
+.clickable-title:hover {
+  color: #007bff;
+}
+
 </style>
