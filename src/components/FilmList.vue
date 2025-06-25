@@ -24,30 +24,39 @@
     </template>
   </div>
 
-  <!-- Filter buttons -->
-  <FilmFilter :selected="selectedFilter" @change-filter="val => selectedFilter = val" />
+  <!-- Filter + Sort row -->
+  <div class="filter-buttons-wrapper">
+    <div class="filter-buttons">
+      <FilmFilter :selected="selectedFilter" @change-filter="val => selectedFilter = val" />
+      <SortDropdown ref="sortDropdownRef" @sort="handleSort" />
+    </div>
+  </div>
 
   <!-- Column headers -->
   <div v-if="filteredFilms.length" class="grid-labels">
     <DataFilterSortMenu
+      ref="titleDropdownRef"
       label="Title"
       :values="Array.from(new Set(films.map(f => f.title)))"
       :selected="titleFilter"
       @update:selected="val => titleFilter = val"
     />
     <DataFilterSortMenu
+      ref="yearDropdownRef"
       label="Year"
       :values="Array.from(new Set(films.map(f => f.year)))"
       :selected="yearFilter"
       @update:selected="val => yearFilter = val"
     />
     <DataFilterSortMenu
+      ref="genreDropdownRef"
       label="Genre"
       :values="Array.from(new Set(films.flatMap(f => f.genre?.split(',').map(g => g.trim()) || [])))"
       :selected="genreFilter"
       @update:selected="val => genreFilter = val"
     />
     <DataFilterSortMenu
+      ref="ratingDropdownRef"
       label="Rating"
       :values="Array.from(new Set(films.map(f => f.rating)))"
       :selected="ratingFilter"
@@ -87,6 +96,7 @@ import FilmFilter from './FilmFilter.vue'
 import GenreDropdown from './GenreDropdown.vue'
 import genreOptions from '@/data/genres'
 import DataFilterSortMenu from './DataFilterSortMenu.vue'
+import SortDropdown from './SortDropdown.vue'
 
 defineProps<{ title: string }>()
 
@@ -138,6 +148,26 @@ const filteredFilms = computed(() => {
     (ratingFilter.value.length === 0 || ratingFilter.value.includes(f.rating))
   )
 })
+
+const titleDropdownRef = ref()
+const yearDropdownRef = ref()
+const genreDropdownRef = ref()
+const ratingDropdownRef = ref()
+
+const sortDropdownRef = ref()
+
+async function handleSort(option: string) {
+  if (option === 'title') {
+    films.value.sort((a, b) => a.title.localeCompare(b.title));
+  } else if (option === 'rating') {
+    films.value.sort((a, b) => b.rating - a.rating);
+  } else if (option === 'year') {
+    films.value.sort((a, b) => b.year - a.year);
+  } else {
+    await loadFilms();
+  }
+}
+
 
 function resetForm() {
   editingFilmId.value = null
@@ -264,6 +294,11 @@ function resetAll() {
   ratingFilter.value = []
   selectedFilter.value = 'all'
   resetForm()
+  titleDropdownRef.value?.reset()
+  yearDropdownRef.value?.reset()
+  genreDropdownRef.value?.reset()
+  ratingDropdownRef.value?.reset()
+  sortDropdownRef.value?.reset()
 }
 
 
@@ -425,6 +460,19 @@ h2 {
   gap: 10px;
   justify-content: center;
   align-items: center;
+}
+
+.filter-buttons-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  height: 38px;
 }
 
 .no-films {

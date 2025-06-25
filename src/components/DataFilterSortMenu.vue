@@ -1,20 +1,20 @@
 <template>
-  <div class="header-cell">
+  <div class="header-cell" ref="dropdownRef">
     <div class="header-label" @click="toggleDropdown">
       {{ label }}
     </div>
+
     <div v-if="dropdownOpen" class="dropdown">
       <input v-model="search" class="dropdown-search" placeholder="Search..." />
 
       <div class="dropdown-options">
         <label v-for="option in filteredOptions" :key="option" class="dropdown-option">
-          <input type="checkbox" v-model="localSelected" :value="option" />
+          <input type="checkbox" :value="option" v-model="localSelected" />
           {{ option }}
         </label>
       </div>
 
       <div class="dropdown-actions">
-        <button @click="apply">Apply</button>
         <button @click="reset">Reset</button>
       </div>
     </div>
@@ -22,43 +22,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
-  label: string;
-  values: (string | number)[];
-  selected: (string | number)[];
-}>();
+  label: string
+  values: (string | number)[]
+  selected: (string | number)[]
+}>()
 
-const emit = defineEmits(['update:selected']);
+const emit = defineEmits(['update:selected'])
 
-const dropdownOpen = ref(false);
-const search = ref('');
-const localSelected = ref<(string | number)[]>([...props.selected]);
+const dropdownOpen = ref(false)
+const search = ref('')
+const dropdownRef = ref<HTMLElement | null>(null)
+
+const localSelected = computed({
+  get: () => props.selected,
+  set: (val) => emit('update:selected', val)
+})
 
 const filteredOptions = computed(() =>
   props.values.filter(val =>
     val.toString().toLowerCase().includes(search.value.toLowerCase())
   )
-);
+)
 
 function toggleDropdown() {
-  dropdownOpen.value = !dropdownOpen.value;
-}
-function apply() {
-  emit('update:selected', [...localSelected.value]);
-  dropdownOpen.value = false;
+  dropdownOpen.value = !dropdownOpen.value
 }
 
 function reset() {
-  localSelected.value = [];
-  emit('update:selected', []);
-  dropdownOpen.value = false;
+  localSelected.value = []
+  search.value = ''
+  dropdownOpen.value = false
 }
+
+// Optional: click outside closes dropdown
+function handleClickOutside(event: MouseEvent) {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    dropdownOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+defineExpose({ reset })
 </script>
 
 <style scoped>
-
 .header-cell {
   position: relative;
   width: 100%;
@@ -83,7 +100,6 @@ function reset() {
   font-size: 0.7rem;
   margin-left: 4px;
 }
-
 
 .dropdown {
   position: absolute;
@@ -131,7 +147,7 @@ function reset() {
   white-space: nowrap;
 }
 
-.dropdown-option input[type="checkbox"] {
+.dropdown-option input[type='checkbox'] {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -152,4 +168,3 @@ function reset() {
   cursor: pointer;
 }
 </style>
-
