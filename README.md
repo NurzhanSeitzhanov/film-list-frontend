@@ -1,45 +1,57 @@
-# .
+# Film List App
 
-This template should help get you started developing with Vue 3 in Vite.
+Die **Film List App** ist eine moderne Webanwendung zur Verwaltung und Analyse deiner Filmsammlung. 
+Sie bietet dir alle wichtigen Funktionen zum Hinzufügen, Bearbeiten, Filtern, Sortieren und Löschen von Filmen: mit einer benutzerfreundlichen Oberfläche und reaktiver Funktionalität auf Basis von Vue.js und Spring Boot.
 
-## Recommended IDE Setup
+---
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Funktionen
 
-## Type Support for `.vue` Imports in TS
+- Filme hinzufügen mit Titel, Jahr, Genre, Bewertung, "Gesehen" und "Favorit"
+- Filme bearbeiten durch Klick auf "Edit"
+- Filme löschen - einzeln oder alle auf einmal
+- Filter und Suche nach Titel, Jahr, Genre oder Bewertung
+- Gesehen- und Favoriten-Filter für gezielte Ansicht
+- Sortierung nach Titel, Jahr oder Bewertung
+- Zurücksetzen aller Filter, Sortierung und Formulareingaben mit einem Klick
+- Statistikseite mit Auswertungen zur Filmsammlung
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+---
 
-## Customize configuration
+## Benutzung der App
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Filme hinzufügen
+- Gib den Titel, das Jahr, Genre(s) und die Bewertung eines Films ein.
+- Du kannst auch die Checkboxen "Watched" und "Favorite" aktivieren.
+- Klicke auf "Add Film", um den Film zur Liste hinzuzufügen.
 
-## Project Setup
+### Filme bearbeiten oder löschen
+- Klicke bei einem Film auf "Edit", um das Formular automatisch mit den Filmdaten auszufüllen.
+- Nimm Änderungen vor und speichere sie mit "Update Film".
+- Klicke auf "Delete", um einen einzelnen Film zu löschen.
+- Klicke auf "Delete All", um die gesamte Filmliste zu löschen. Dies entfernt alle Filme aus der Datenbank.
 
-```sh
-npm install
-```
 
-### Compile and Hot-Reload for Development
+### Filter und Sortierung
+- Über den Spaltenüberschriften kannst du gezielt nach Titel, Jahr, Genre oder Bewertung filtern.
+- Im Filter-Dropdown gibt es ein Suchfeld zur schnellen Eingrenzung der Filteroptionen.
+- Links oben kannst du über Schaltflächen nach "Watched" und "Favorite" filtern.
+- Rechts oben findest du das Sortierungsmenü, über das du nach Titel, Jahr oder Bewertung sortieren kannst.
+- Alle Filter- und Sortier-Dropdowns schließen sich automatisch, wenn du außerhalb klickst.
 
-```sh
-npm run dev
-```
+### Zurücksetzen
+- Klicke auf den Seitentitel, um:
+    - Alle aktiven Filter zurückzusetzen
+    - Die aktuelle Sortierung aufzuheben
+    - Alle Eingaben im Formular zu löschen
 
-### Type-Check, Compile and Minify for Production
+### Statistikseite
+- Die Statistikseite zeigt eine Auswertung deiner Filmsammlung:
+    - Gesamtanzahl der Filme
+    - Durchschnittliche Bewertung
+    - Höchst- und Niedrigstbewerteter Film
+    - Anzahl der Filme mit Bewertung >= 7
+    - Frühestes und spätestes Erscheinungsjahr
+    - Häufigste Genres (Top Genres)
 
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+---
